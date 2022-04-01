@@ -2,13 +2,16 @@ defmodule GeoTestTest do
   use ExUnit.Case
 
   test "check is location edge" do
-    point = {-3.729696, -38.479859}
+    point = {-3.729848779895589, -38.47981178519322}
     polylines = [
-      %{lat: -2.971547, lng: -47.605833},
-      %{lat: -2.9784, lng: -47.528292},
-      %{lat: -2.972732, lng: -47.59337}
+      #-3.729848779895589, -38.47981178519322
+      #-3.7302098905400407, -38.48138249802991
+      #-3.7618779814726495, -38.50804365559882
+      #-3.780758350234388, -38.54586513382312
+      %{lat: -3.7302098905400407, lng: -38.48138249802991},
+      %{lat: -3.7618779814726495, lng: -38.50804365559882},
+      %{lat: -3.780758350234388, lng: -38.54586513382312}
     ]
-    GeoTest.is_location_on_edge(point, polylines)
-    |> IO.inspect()
+    assert GeoTest.is_location_on_edge(point, polylines) == true
   end
 end

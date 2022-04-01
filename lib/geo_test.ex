@@ -1,5 +1,5 @@
 defmodule GeoTest do
-  @default_tolerance 0.1
+  @default_tolerance 300.0
 
   @doc """
     That function will calculate if that point is off the route
@@ -12,29 +12,28 @@ defmodule GeoTest do
   end
 
   defp is_location_on_edge_or_path(_point, [] = _polylines, _closed, _geodesic, _toleranceEarth), do: false
-  defp is_location_on_edge_or_path({lat, lng} = _point, polylines, closed, geodesic, toleranceEarth) do
-    size = length(polylines)
-
+  defp is_location_on_edge_or_path({lat, lng} = _point, polylines, _closed, geodesic, toleranceEarth) do
     tolerance = toleranceEarth / MathTest.earth_radius()
     haversine_tolerance = MathTest.haversine(tolerance)
 
     lat3 = Math.deg2rad(lat)
     lng3 = Math.deg2rad(lng)
-    prev = if !closed, do: Enum.at(polylines, size - 1), else: Enum.at(polylines, 0)
+    prev = Enum.at(polylines, 0)
     lat1 = Math.deg2rad(prev.lat)
     lng1 = Math.deg2rad(prev.lng)
 
     if geodesic do
-      Enum.reduce(polylines, %{lat: lat1, lng: lng1}, fn %{lat: lat, lng: lng}, acc ->
-        lat2 = MathTest.deg2rad(lat)
-        lng2 = MathTest.deg2rad(lng)
-        if is_on_segment_gc(acc.lat, acc.lng, lat2, lng2, lat3, lng3, haversine_tolerance) do
-          true
-        else 
-          Map.merge(acc, %{lat: lat2, lng: lng2})
-        end
-      end)
-      |> Enum.member?(true)
+      result = 
+        Enum.reduce(polylines, %{lat: lat1, lng: lng1, in_route: false}, fn %{lat: lat, lng: lng}, acc ->
+          lat2 = MathTest.deg2rad(lat)
+          lng2 = MathTest.deg2rad(lng)
+          if is_on_segment_gc(acc.lat, acc.lng, lat2, lng2, lat3, lng3, haversine_tolerance) do
+            Map.merge(acc, %{in_route: true})
+          else 
+            Map.merge(acc, %{lat: lat2, lng: lng2})
+          end
+        end)
+      result.in_route
     end
   end
 
